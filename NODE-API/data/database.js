@@ -1,10 +1,17 @@
 import mongoose from 'mongoose';
 
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => {
-    console.log('connected to the DB');
-  })
-  .catch((e) => {
-    console.log(e);
-  });
+export const connectDB = () => {
+  mongoose
+    .connect(
+      'mongodb+srv://abbasbackend:Yaalimadad110@cluster0.bjdhxec.mongodb.net/',
+      {
+        dbName: 'BackendApi',
+      }
+    )
+    .then((c) => {
+      console.log(`connected to the DB ${c.connection.host}`);
+    })
+    .catch((e) => {
+      console.log(e);
+    });
+};

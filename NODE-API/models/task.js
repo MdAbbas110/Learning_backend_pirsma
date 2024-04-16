@@ -19,3 +19,5 @@ const taskSchema = new mongoose.Schema({
     required: true,
   },
 });
+
+export const Task = mongoose.model('Task', taskSchema);

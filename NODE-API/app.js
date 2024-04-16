@@ -1,14 +1,18 @@
 import express from 'express';
+import { config } from 'dotenv';
+import userRouter from './routes/user.js';
+export const app = express();
 
-const app = express();
-
-app.get('/user/all', (req, res) => {
-  res.json({
-    msg: 'working',
-    user: [],
-  });
+config({
+  path: './data/.env',
 });
 
-app.listen(4000, () => {
-  console.log('server running');
+app.use(express.json());
+
+app.use('/api/v1/users', userRouter);
+
+app.get('/', (req, res) => {
+  res.json({
+    msg: 'worked',
+  });
 });
