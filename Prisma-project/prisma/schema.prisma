@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://meerabbas110:z28dvViGkObF@ep-mute-grass-a1n8oe8y.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  firstName String?
+  lastName  String?
+  password  String
+}
+
+model Todo {
+  userId      Int
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  done        Boolean @default(false)
+}
+
+// this the only place u define the schema and under the hood prisma will creat the sql queries and create tables in data base 
+//model and then the user data and other modele needed just add the feild in schema it will add the query and make a alter
+
+//* until now we have just wrote some code it's not sql to create a table in db we need to migrate this normal code to sql query to generate the table
+//npx prisma migrate dev --name Initialize the schema this commad let you do that migrate the code form this code to sql query with the name attached u want to give
