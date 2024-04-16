@@ -1,39 +1,75 @@
-import { User } from '../models/users';
+import { User } from '../models/users.js';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 
-export const register = async (req, res) => {
+import { sendCookies } from '../utils/features.js';
+
+export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    const userExist = await User.findOne({ email });
+    let user = await User.findOne({ email });
 
-    if (userExist) return res.status(404).send('your already created');
+    if (user) {
+      res.status(404).json({
+        success: 'fail',
+      });
+    }
 
-    const hashedPassword = bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const userProfile = await User.create({
       name,
       email,
       password: hashedPassword,
     });
-    const jwtToken = jwt.sign({ _id: userProfile._id }, process.env.JWT_SECRET);
 
-    res
-      .status(201)
-      .cookie('token', {
-        httpOnly: true,
-        maxAge: 15 * 60 * 1000,
-      })
-      .json({
-        success: true,
-        message: 'user created',
-      });
+    sendCookies(userProfile, res, 'Registered Successfully', 200);
   } catch (error) {
     console.log(error);
   }
 };
 
-export const login = async (req, res) => {};
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-export const getAllUser = async () => {};
+    const user = await User.findOne({ email }).select('+password');
+
+    if (!user) {
+      res.status(404).json({
+        msg: 'Invalid Email or password',
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      res.status(404).json({
+        success: false,
+        msg: 'Invalid Email or password',
+      });
+    }
+
+    sendCookies(user, res, `Welcome back, ${user.name}`, 200);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getMyProfile = (req, res) => {
+  res.status(200).json({
+    msg: true,
+    user: req.user,
+  });
+};
+
+export const logout = async (req, res) => {
+  res
+    .status(200)
+    .cookie('token', '', {
+      expire: new Date(Date.now()),
+    })
+    .json({
+      msg: 'logout',
+    });
+};
