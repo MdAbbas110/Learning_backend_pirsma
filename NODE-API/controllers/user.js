@@ -9,11 +9,7 @@ export const register = async (req, res, next) => {
 
     let user = await User.findOne({ email });
 
-    if (user) {
-      res.status(404).json({
-        success: 'fail',
-      });
-    }
+    if (!task) return next(new ErrorClass('Email already exists', 404));
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -25,7 +21,7 @@ export const register = async (req, res, next) => {
 
     sendCookies(userProfile, res, 'Registered Successfully', 200);
   } catch (error) {
-    console.log(error);
+    next(error);
   }
 };
 
@@ -35,11 +31,7 @@ export const login = async (req, res) => {
 
     const user = await User.findOne({ email }).select('+password');
 
-    if (!user) {
-      res.status(404).json({
-        msg: 'Invalid Email or password',
-      });
-    }
+    if (!task) return next(new ErrorClass('Invalid Email or password', 400));
 
     const isMatch = await bcrypt.compare(password, user.password);
 
@@ -52,7 +44,7 @@ export const login = async (req, res) => {
 
     sendCookies(user, res, `Welcome back, ${user.name}`, 200);
   } catch (error) {
-    console.log(error);
+    next(error);
   }
 };
 
@@ -68,6 +60,8 @@ export const logout = async (req, res) => {
     .status(200)
     .cookie('token', '', {
       expire: new Date(Date.now()),
+      sameSite: process.env.NODE_ENV === 'Development' ? 'lax' : 'none',
+      secure: process.env.NODE_ENV === 'Development' ? false : true,
     })
     .json({
       msg: 'logout',
